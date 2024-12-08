@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Download, MoreVertical, Archive, Trash, Eye } from "lucide-react"
+import { Download, MoreVertical, Archive, Trash } from "lucide-react"
 
 interface Report {
   id: string
@@ -50,6 +50,7 @@ const sampleReports: Report[] = [
 ]
 
 export function ReportList() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [reports, setReports] = useState<Report[]>(sampleReports)
   const [search, setSearch] = useState("")
   const [typeFilter, setTypeFilter] = useState("all")

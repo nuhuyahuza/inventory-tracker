@@ -28,6 +28,7 @@ export function ViewEstimateButton({ estimate }: ViewEstimateButtonProps) {
   const handleEmail = async () => {
     const doc = generateEstimatePDF(estimate)
     const pdfBlob = doc.output('blob')
+    console.log(pdfBlob);
     
     // Here you would typically send this to your API
     // For now, we'll just show an alert

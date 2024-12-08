@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
@@ -43,7 +42,7 @@ export function RecurringEstimate({ estimate, onSetupRecurring }: RecurringEstim
       startDate: new Date().toISOString().split('T')[0],
     },
   })
-
+  console.log(estimate)
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSetupRecurring)} className="space-y-4">
