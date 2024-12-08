@@ -20,6 +20,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { salesData } from "@/lib/data/sales"
 import { formatCurrency } from "@/lib/utils"
+import { SaleStatusBadge } from "./SaleStatusBadge"
 
 export function SalesTable() {
   const [search, setSearch] = useState("")
