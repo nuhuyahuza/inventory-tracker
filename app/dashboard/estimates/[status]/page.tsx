@@ -5,14 +5,14 @@ import { capitalizeFirstLetter } from "@/lib/utils";
 type EstimateStatus = "pending" | "approved" | "rejected";
 
 interface EstimateStatusPageProps {
-  readonly params: {
-    readonly status: EstimateStatus;
+  params: {
+    status: EstimateStatus;
   };
 }
 
 export async function generateMetadata({
   params,
-}: EstimateStatusPageProps): Promise<Metadata> {
+}: { params: { status: EstimateStatus } }): Promise<Metadata> {
   return {
     title: `${capitalizeFirstLetter(params.status)} Estimates | Dashboard`,
     description: `View all ${params.status} estimates`,
@@ -21,7 +21,7 @@ export async function generateMetadata({
 
 export default function EstimateStatusPage({
   params,
-}: EstimateStatusPageProps) {
+}: { params: { status: EstimateStatus } }) {
   return (
     <div className="space-y-8">
       <div>
