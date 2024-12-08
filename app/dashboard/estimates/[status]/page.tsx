@@ -5,33 +5,35 @@ import { capitalizeFirstLetter } from "@/lib/utils";
 type EstimateStatus = "pending" | "approved" | "rejected";
 
 interface EstimateStatusPageProps {
-  params: Promise<{
-    status: EstimateStatus;
-  }>;
-}
-
-export async function generateMetadata({ params }: EstimateStatusPageProps): Promise<Metadata> {
-  const resolvedParams = await params; // Resolve the promise
-  return {
-    title: `${capitalizeFirstLetter(resolvedParams.status)} Estimates | Dashboard`,
-    description: `View all ${resolvedParams.status} estimates`,
+  readonly params: {
+    readonly status: EstimateStatus;
   };
 }
 
-export default async function EstimateStatusPage({ params }: EstimateStatusPageProps) {
-  const resolvedParams = await params; // Resolve the promise
+export async function generateMetadata({
+  params,
+}: EstimateStatusPageProps): Promise<Metadata> {
+  return {
+    title: `${capitalizeFirstLetter(params.status)} Estimates | Dashboard`,
+    description: `View all ${params.status} estimates`,
+  };
+}
+
+export default function EstimateStatusPage({
+  params,
+}: EstimateStatusPageProps) {
   return (
     <div className="space-y-8">
       <div>
         <h2 className="text-3xl font-bold tracking-tight">
-          {capitalizeFirstLetter(resolvedParams.status)} Estimates
+          {capitalizeFirstLetter(params.status)} Estimates
         </h2>
         <p className="text-muted-foreground">
-          View and manage {resolvedParams.status} estimates
+          View and manage {params.status} estimates
         </p>
       </div>
 
-      <EstimatesTable status={resolvedParams.status} />
+      <EstimatesTable status={params.status} />
     </div>
   );
 }
