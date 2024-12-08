@@ -27,7 +27,7 @@ export default function EstimateStatusPage({ params }: EstimateStatusPageProps) 
         </p>
       </div>
       
-      <EstimatesTable defaultStatus={params.status} />
+      <EstimatesTable status={params.status} />
     </div>
   )
 } 

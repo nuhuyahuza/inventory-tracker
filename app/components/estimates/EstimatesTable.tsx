@@ -23,9 +23,13 @@ import { EstimateStatusBadge } from "@/components/estimates/EstimateStatusBadge"
 import { ConvertToSaleButton } from "./ConvertToSaleButton"
 import { ViewEstimateButton } from "./ViewEstimateButton"
 
-export function EstimatesTable() {
+interface EstimatesTableProps {
+  status?: string
+}
+
+export function EstimatesTable({ status = "all" }: EstimatesTableProps) {
   const [search, setSearch] = useState("")
-  const [statusFilter, setStatusFilter] = useState<string>("all")
+  const [statusFilter, setStatusFilter] = useState<string>(status)
   const [dateFilter, setDateFilter] = useState<string>("all")
 
   const filteredEstimates = estimates.filter(estimate => {

@@ -33,6 +33,7 @@ export function EstimateExport() {
   const [showPreview, setShowPreview] = useState(false)
 
   const previewData = estimates.slice(0, 5).map(estimate => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rowData: Record<string, any> = {}
     selectedFields.forEach(field => {
       rowData[field] = estimate[field as keyof typeof estimate]

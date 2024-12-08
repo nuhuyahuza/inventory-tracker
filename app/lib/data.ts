@@ -52,3 +52,16 @@ export const inventoryItems: InventoryItem[] = [
     lastUpdated: new Date('2024-03-13'),
   },
 ];
+
+export const estimates = [
+  {
+    id: "EST-001",
+    customerName: "John Doe",
+    customerEmail: "john@example.com",
+    total: 1500.00,
+    status: "pending",
+    createdAt: new Date(),
+    validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+  },
+  // Add more sample estimates as needed
+]

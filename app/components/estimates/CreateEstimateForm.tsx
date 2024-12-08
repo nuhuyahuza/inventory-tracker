@@ -18,12 +18,22 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
 import { Plus, Trash2 } from "lucide-react"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { inventoryItems as products } from "@/lib/data"
+import { formatCurrency } from "@/lib/utils"
 
 const estimateItemSchema = z.object({
-  description: z.string().min(1, "Description is required"),
-  quantity: z.string().transform(Number),
-  unitPrice: z.string().transform(Number),
-  amount: z.string().transform(Number),
+  productId: z.string().min(1, "Product is required"),
+  description: z.string(),
+  quantity: z.number(),
+  unitPrice: z.number(),
+  amount: z.number(),
 })
 
 const estimateSchema = z.object({
@@ -52,7 +62,7 @@ export function CreateEstimateForm({ onSuccess }: CreateEstimateFormProps) {
       customerName: "",
       customerEmail: "",
       validUntil: "",
-      items: [{ description: "", quantity: 1, unitPrice: 0, amount: 0 }],
+      items: [{ productId: "", description: "", quantity: 1, unitPrice: 0, amount: 0 }],
       notes: "",
       terms: "",
       subTotal: 0,
@@ -65,6 +75,38 @@ export function CreateEstimateForm({ onSuccess }: CreateEstimateFormProps) {
     name: "items",
     control: form.control,
   })
+
+  // Handle product selection
+  const handleProductSelect = (productId: string, index: number) => {
+    const product = products.find(p => p.id === productId)
+    if (product) {
+      form.setValue(`items.${index}.description`, product.name || product.category)
+      form.setValue(`items.${index}.unitPrice`, product.price)
+      // Calculate amount
+      const quantity = form.getValues(`items.${index}.quantity`)
+      form.setValue(`items.${index}.amount`, Number(quantity) * product.price)
+      calculateTotals()
+    }
+  }
+
+  // Handle quantity change
+  const handleQuantityChange = (quantity: string, index: number) => {
+    const unitPrice = form.getValues(`items.${index}.unitPrice`)
+    form.setValue(`items.${index}.amount`, (Number(quantity) * Number(unitPrice)))
+    calculateTotals()
+  }
+
+  // Calculate subtotal, tax, and total
+  const calculateTotals = () => {
+    const items = form.getValues("items")
+    const subtotal = items.reduce((sum, item) => sum + Number(item.amount), 0)
+    const tax = subtotal * 0.1 // 10% tax rate - adjust as needed
+    const total = subtotal + tax
+
+    form.setValue("subTotal", subtotal)
+    form.setValue("tax", tax)
+    form.setValue("total", total)
+  }
 
   async function onSubmit(data: EstimateFormValues) {
     try {
@@ -133,7 +175,13 @@ export function CreateEstimateForm({ onSuccess }: CreateEstimateFormProps) {
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => append({ description: "", quantity: 0, unitPrice: 0, amount: 0 })}
+              onClick={() => append({ 
+                productId: "", 
+                description: "", 
+                quantity: 1, 
+                unitPrice: 0, 
+                amount: 0 
+              })}
             >
               <Plus className="h-4 w-4 mr-2" />
               Add Item
@@ -145,12 +193,46 @@ export function CreateEstimateForm({ onSuccess }: CreateEstimateFormProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
+                  name={`items.${index}.productId`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Product</FormLabel>
+                      <Select
+                        value={field.value}
+                        onValueChange={(value) => {
+                          field.onChange(value)
+                          handleProductSelect(value, index)
+                        }}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a product" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {products.map(product => (
+                            <SelectItem 
+                              key={product.id} 
+                              value={product.id}
+                            >
+                              {product.name} ({formatCurrency(product.price)})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
                   name={`items.${index}.description`}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Description</FormLabel>
                       <FormControl>
-                        <Input placeholder="Item description" {...field} />
+                        <Input {...field} readOnly />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -163,9 +245,17 @@ export function CreateEstimateForm({ onSuccess }: CreateEstimateFormProps) {
                     name={`items.${index}.quantity`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Qty</FormLabel>
+                        <FormLabel>Quantity</FormLabel>
                         <FormControl>
-                          <Input type="number" min="1" {...field} />
+                          <Input 
+                            type="number" 
+                            min="1" 
+                            {...field}
+                            onChange={(e) => {
+                              field.onChange(e)
+                              handleQuantityChange(e.target.value, index)
+                            }}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -179,7 +269,7 @@ export function CreateEstimateForm({ onSuccess }: CreateEstimateFormProps) {
                       <FormItem>
                         <FormLabel>Unit Price</FormLabel>
                         <FormControl>
-                          <Input type="number" step="0.01" {...field} />
+                          <Input type="number" step="0.01" {...field} readOnly />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -193,7 +283,7 @@ export function CreateEstimateForm({ onSuccess }: CreateEstimateFormProps) {
                       <FormItem>
                         <FormLabel>Amount</FormLabel>
                         <FormControl>
-                          <Input type="number" step="0.01" readOnly {...field} />
+                          <Input type="number" step="0.01" {...field} readOnly />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -208,7 +298,10 @@ export function CreateEstimateForm({ onSuccess }: CreateEstimateFormProps) {
                   variant="ghost"
                   size="sm"
                   className="mt-2 text-destructive hover:text-destructive"
-                  onClick={() => remove(index)}
+                  onClick={() => {
+                    remove(index)
+                    calculateTotals()
+                  }}
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
                   Remove Item
@@ -260,15 +353,15 @@ export function CreateEstimateForm({ onSuccess }: CreateEstimateFormProps) {
           <Card className="p-4 space-y-4">
             <div className="flex justify-between">
               <span>Subtotal:</span>
-              <span>$0.00</span>
+              <span>{formatCurrency(form.watch("subTotal") || 0)}</span>
             </div>
             <div className="flex justify-between">
-              <span>Tax (0%):</span>
-              <span>$0.00</span>
+              <span>Tax (10%):</span>
+              <span>{formatCurrency(form.watch("tax") || 0)}</span>
             </div>
             <div className="flex justify-between font-bold">
               <span>Total:</span>
-              <span>$0.00</span>
+              <span>{formatCurrency(form.watch("total") || 0)}</span>
             </div>
           </Card>
         </div>
