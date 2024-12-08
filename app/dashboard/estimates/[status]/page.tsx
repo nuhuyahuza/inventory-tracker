@@ -1,23 +1,27 @@
-import { Metadata } from "next"
-import { EstimatesTable } from "@/components/estimates/EstimatesTable"
-import { capitalizeFirstLetter } from "@/lib/utils"
+import { Metadata } from "next";
+import { EstimatesTable } from "@/components/estimates/EstimatesTable";
+import { capitalizeFirstLetter } from "@/lib/utils";
 
-type EstimateStatus = "pending" | "approved" | "rejected"
+type EstimateStatus = "pending" | "approved" | "rejected";
 
 interface EstimateStatusPageProps {
   params: {
-    status: EstimateStatus
-  }
+    status: EstimateStatus;
+  };
 }
 
-export async function generateMetadata({ params }: EstimateStatusPageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: EstimateStatusPageProps): Promise<Metadata> {
   return {
     title: `${capitalizeFirstLetter(params.status)} Estimates | Dashboard`,
     description: `View all ${params.status} estimates`,
-  }
+  };
 }
 
-export default function EstimateStatusPage({ params }: Readonly<EstimateStatusPageProps>) {
+export default function EstimateStatusPage({
+  params,
+}: EstimateStatusPageProps) {
   return (
     <div className="space-y-8">
       <div>
@@ -28,8 +32,8 @@ export default function EstimateStatusPage({ params }: Readonly<EstimateStatusPa
           View and manage {params.status} estimates
         </p>
       </div>
-      
+
       <EstimatesTable status={params.status} />
     </div>
-  )
+  );
 }
