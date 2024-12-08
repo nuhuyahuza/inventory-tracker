@@ -1,6 +1,10 @@
-export function Footer() {
+interface FooterProps {
+  className?: string
+}
+
+export function Footer({ className }: FooterProps) {
   return (
-    <footer className="border-t py-6 px-8">
+    <footer className={className}>
       <div className="flex justify-between items-center">
         <p className="text-sm text-muted-foreground">
           © 2024 EstimateHub. All rights reserved.

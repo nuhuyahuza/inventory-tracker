@@ -14,9 +14,13 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Search, Bell, LogOut, Settings, User } from "lucide-react"
 
-export function Header() {
+interface HeaderProps {
+  className?: string
+}
+
+export function Header({ className }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className={className}>
       <div className="flex h-16 items-center px-4 gap-4">
         <Link href="/dashboard" className="font-semibold">
           EstimateHub

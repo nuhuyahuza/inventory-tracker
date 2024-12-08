@@ -1,7 +1,5 @@
 import { ProductsTable } from "@/components/products/ProductsTable"
-import { Button } from "@/components/ui/button"
-import { Plus } from "lucide-react"
-import Link from "next/link"
+import { AddProductModal } from "@/components/products/AddProductModal"
 
 export default function ProductsPage() {
   return (
@@ -13,12 +11,7 @@ export default function ProductsPage() {
             Manage your inventory items
           </p>
         </div>
-        <Link href="/dashboard/products/new">
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Product
-          </Button>
-        </Link>
+        <AddProductModal />
       </div>
       
       <ProductsTable />

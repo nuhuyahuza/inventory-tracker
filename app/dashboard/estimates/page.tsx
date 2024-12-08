@@ -1,12 +1,10 @@
 import { Metadata } from "next"
 import { EstimatesTable } from "@/components/estimates/EstimatesTable"
-import { Button } from "@/components/ui/button"
-import { PlusCircle } from "lucide-react"
-import Link from "next/link"
+import { AddEstimateModal } from "@/components/estimates/AddEstimateModal"
 
 export const metadata: Metadata = {
   title: "Estimates | Dashboard",
-  description: "Manage your estimates and quotes",
+  description: "Manage your estimates",
 }
 
 export default function EstimatesPage() {
@@ -16,15 +14,10 @@ export default function EstimatesPage() {
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Estimates</h2>
           <p className="text-muted-foreground">
-            Create and manage customer estimates
+            View and manage all estimates
           </p>
         </div>
-        <Link href="/dashboard/estimates/new">
-          <Button>
-            <PlusCircle className="h-4 w-4 mr-2" />
-            Create Estimate
-          </Button>
-        </Link>
+        <AddEstimateModal />
       </div>
       
       <EstimatesTable />

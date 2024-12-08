@@ -1,5 +1,4 @@
 import { jsPDF } from "jspdf"
-import "jspdf-autotable"
 import autoTable from 'jspdf-autotable'
 import { Estimate } from "@/lib/data/estimates"
 import { inventoryItems } from "@/lib/data"
@@ -7,7 +6,8 @@ import { formatCurrency } from "@/lib/utils"
 
 declare module 'jspdf' {
   interface jsPDF {
-    autoTable: typeof autoTable
+    autoTable: typeof autoTable;
+    lastAutoTable: { finalY: number };
   }
 }
 
@@ -51,7 +51,7 @@ export function generateEstimatePDF(estimate: Estimate) {
   })
   
   // Add total
-  const finalY = (doc as any).lastAutoTable.finalY + 10
+  const finalY = doc.lastAutoTable.finalY + 10
   doc.text(`Total: ${formatCurrency(estimate.total)}`, 14, finalY)
   
   // Add notes if present

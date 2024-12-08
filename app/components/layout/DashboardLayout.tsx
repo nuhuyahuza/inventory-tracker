@@ -14,10 +14,12 @@ export function DashboardLayout({ children, className }: DashboardLayoutProps) {
       <Header />
       <div className="flex flex-1">
         <Sidebar />
-        <main className={cn("flex-1 overflow-y-auto p-8", className)}>
-          {children}
+        <div className="flex-1 flex flex-col">
+          <main className={cn("flex-1 p-8", className)}>
+            {children}
+          </main>
           <Footer />
-        </main>
+        </div>
       </div>
     </div>
   )
