@@ -18,15 +18,12 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { estimateTemplates } from "@/lib/data/estimateTemplates"
-import { SaveTemplate } from "./SaveTemplate"
-import { formatCurrency } from "@/lib/utils"
-
 export function TemplateManager() {
   const [isOpen, setIsOpen] = useState(false)
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
-
   const handleUseTemplate = (templateId: string) => {
     setSelectedTemplate(templateId)
+    console.log(selectedTemplate)
     // Logic to populate estimate form with template data
     setIsOpen(false)
   }
@@ -61,7 +58,7 @@ export function TemplateManager() {
                   (sum, item) => sum + item.price * item.quantity,
                   0
                 )
-
+                console.log(total);
                 return (
                   <TableRow key={template.id}>
                     <TableCell>{template.name}</TableCell>

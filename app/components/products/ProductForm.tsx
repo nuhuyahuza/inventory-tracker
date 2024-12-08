@@ -20,7 +20,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
 import { categories, type InventoryItem } from "@/lib/data"
 
 const productSchema = z.object({

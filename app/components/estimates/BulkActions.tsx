@@ -1,15 +1,7 @@
 "use client"
 
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Download, Mail, Trash2, MoreHorizontal } from "lucide-react"
+import { Download, Mail, Trash2 } from "lucide-react"
 import { Estimate } from "@/lib/data/estimates"
 import { generateEstimatePDF } from "@/lib/utils/pdf"
 

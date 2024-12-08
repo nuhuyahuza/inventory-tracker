@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
-import { ReportType, ReportPeriod } from "@/lib/data/reports"
+import { ReportType } from "@/lib/data/reports"
 import { Card } from "@/components/ui/card"
 
 const reportSchema = z.object({
