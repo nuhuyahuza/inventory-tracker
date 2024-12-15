@@ -1,6 +1,7 @@
 import { jsPDF } from "jspdf"
 import autoTable from 'jspdf-autotable'
 import { Estimate } from "@/lib/data/estimates"
+import { Sale } from "@/lib/data/sales"
 import { inventoryItems } from "@/lib/data"
 import { formatCurrency } from "@/lib/utils"
 
@@ -67,6 +68,54 @@ export function generateEstimatePDF(estimate: Estimate) {
   doc.text("Terms and Conditions:", 14, termsY)
   doc.text("1. This estimate is valid until the date specified above.", 14, termsY + 7)
   doc.text("2. Prices are subject to change if not accepted within the valid period.", 14, termsY + 14)
+  
+  return doc
+}
+
+export function generateSalePDF(sale: Sale) {
+  const doc = new jsPDF()
+  
+  // Add company header
+  doc.setFontSize(20)
+  doc.text("Company Name", 14, 15)
+  
+  doc.setFontSize(12)
+  doc.text("Sales Receipt", 14, 25)
+  doc.text(`Sale #: ${sale.id}`, 14, 32)
+  doc.text(`Date: ${sale.date.toLocaleDateString()}`, 14, 39)
+  
+  // Add customer information
+  doc.text("Customer Information:", 14, 53)
+  doc.text(`Name: ${sale.customerName || "Walk-in Customer"}`, 14, 60)
+  
+  // Add items table
+  const tableData = sale.items.map(item => {
+    const product = inventoryItems.find(p => p.id === item.productId)
+    return [
+      product?.name || 'Unknown Product',
+      item.quantity.toString(),
+      formatCurrency(item.priceAtSale),
+      formatCurrency(item.quantity * item.priceAtSale)
+    ]
+  })
+  
+  autoTable(doc, {
+    startY: 70,
+    head: [['Product', 'Quantity', 'Price', 'Total']],
+    body: tableData,
+    theme: 'striped',
+    headStyles: { fillColor: [66, 66, 66] }
+  })
+  
+  // Add total and payment information
+  const finalY = doc.lastAutoTable.finalY + 10
+  doc.text(`Total: ${formatCurrency(sale.total)}`, 14, finalY)
+  doc.text(`Payment Method: ${sale.paymentMethod.replace('_', ' ')}`, 14, finalY + 7)
+  doc.text(`Status: ${sale.status.replace('_', ' ')}`, 14, finalY + 14)
+  
+  if (sale.employeeId) {
+    doc.text(`Employee ID: ${sale.employeeId}`, 14, finalY + 21)
+  }
   
   return doc
 } 

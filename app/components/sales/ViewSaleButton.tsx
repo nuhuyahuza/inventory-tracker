@@ -1,29 +1,21 @@
 "use client"
 
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog"
-import { useState } from "react"
+import { Eye, Download, Send } from "lucide-react"
 import { salesData } from "@/lib/data/sales"
-import { inventoryItems } from "@/lib/data"
-import { formatCurrency } from "@/lib/utils"
-import { SaleStatusBadge } from "./SaleStatusBadge"
+import { generateSalePDF } from "@/lib/utils/pdf"
 
 interface ViewSaleButtonProps {
   saleId: string
 }
-
-const products = inventoryItems.reduce((acc, item) => ({
-  ...acc,
-  [item.id]: {
-    name: item.name,
-    price: item.price
-  }
-}), {} as Record<string, { name: string; price: number }>)
 
 export function ViewSaleButton({ saleId }: ViewSaleButtonProps) {
   const [isOpen, setIsOpen] = useState(false)
@@ -31,62 +23,50 @@ export function ViewSaleButton({ saleId }: ViewSaleButtonProps) {
 
   if (!sale) return null
 
+  const handleDownload = () => {
+    const doc = generateSalePDF(sale)
+    doc.save(`sale-${sale.id}.pdf`)
+  }
+
+  const handleEmail = async () => {
+    const doc = generateSalePDF(sale)
+    const pdfBlob = doc.output('blob')
+    console.log(pdfBlob);
+    
+    // Here you would typically send this to your API
+    // For now, we'll just show an alert
+    alert("Email functionality would be implemented here")
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <Button variant="outline" size="sm" onClick={() => setIsOpen(true)}>
-        View
-      </Button>
-      <DialogContent className="max-w-2xl">
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm">
+          <Eye className="h-4 w-4 mr-2" />
+          View
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-4xl">
         <DialogHeader>
-          <DialogTitle>Sale Details - {sale.id}</DialogTitle>
+          <DialogTitle>Sale #{sale.id}</DialogTitle>
         </DialogHeader>
-        <div className="space-y-6">
-          {/* Sale Info */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Customer</p>
-              <p className="font-medium">{sale.customerName || "Walk-in Customer"}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Date</p>
-              <p className="font-medium">{sale.date.toLocaleDateString()}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Status</p>
-              <SaleStatusBadge status={sale.status} />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Total</p>
-              <p className="font-medium">{formatCurrency(sale.total)}</p>
-            </div>
+        
+        <div className="space-y-4">
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={handleDownload}>
+              <Download className="h-4 w-4 mr-2" />
+              Download PDF
+            </Button>
+            <Button variant="outline" onClick={handleEmail}>
+              <Send className="h-4 w-4 mr-2" />
+              Email to Customer
+            </Button>
           </div>
-
-          {/* Items Table */}
-          <div className="border rounded-md">
-            <table className="w-full">
-              <thead className="bg-muted">
-                <tr>
-                  <th className="text-left p-2">Item</th>
-                  <th className="text-right p-2">Quantity</th>
-                  <th className="text-right p-2">Price</th>
-                  <th className="text-right p-2">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sale.items.map((item, index) => {
-                  const product = products[item.productId]
-                  return (
-                    <tr key={index} className="border-t">
-                      <td className="p-2">{product.name}</td>
-                      <td className="text-right p-2">{item.quantity}</td>
-                      <td className="text-right p-2">{formatCurrency(product.price)}</td>
-                      <td className="text-right p-2">{formatCurrency(product.price * item.quantity)}</td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
+          
+          <iframe
+            src={generateSalePDF(sale).output('datauristring')}
+            className="w-full h-[600px] border rounded-lg"
+          />
         </div>
       </DialogContent>
     </Dialog>
