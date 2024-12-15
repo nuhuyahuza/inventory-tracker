@@ -1,9 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import {
   Form,
@@ -14,60 +12,72 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { inventoryItems } from "@/lib/data"
-import { formatCurrency } from "@/lib/utils"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import * as z from "zod"
+import { toast } from "react-hot-toast"
 
-const saleSchema = z.object({
-  customerName: z.string().optional(),
-  paymentMethod: z.enum(["cash", "credit_card", "paypal"]),
+const formSchema = z.object({
+  customerName: z.string().min(1, "Customer name is required"),
   items: z.array(z.object({
-    productId: z.string(),
-    quantity: z.number().min(1),
+    name: z.string().min(1, "Item name is required"),
+    quantity: z.number().min(1, "Quantity must be at least 1"),
+    price: z.number().min(0, "Price must be positive")
   })).min(1, "At least one item is required"),
 })
 
-export function NewSaleForm() {
-  const [selectedItems, setSelectedItems] = useState<Array<{
-    productId: string;
-    quantity: number;
-    price: number;
-  }>>([])
+type FormValues = z.infer<typeof formSchema>
 
-  const form = useForm<z.infer<typeof saleSchema>>({
-    resolver: zodResolver(saleSchema),
+export function NewSaleForm() {
+  const router = useRouter()
+  const [isLoading, setIsLoading] = useState(false)
+
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
-      paymentMethod: "cash",
-      items: [],
-    },
+      customerName: "",
+      items: [{ name: "", quantity: 1, price: 0 }]
+    }
   })
 
-  const total = selectedItems.reduce(
-    (sum, item) => sum + (item.price * item.quantity), 
-    0
-  )
-
-  const onSubmit = (values: z.infer<typeof saleSchema>) => {
-    console.log({ ...values, total })
+  async function onSubmit(data: FormValues) {
+    try {
+      setIsLoading(true)
+      // Add API call here to create sale
+      console.log(data)
+      toast.success("Sale created successfully")
+      router.push("/dashboard/sales")
+      router.refresh()
+    } catch (error) {
+      toast.error("Failed to create sale")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {/* Form fields here */}
-        <div className="flex justify-between items-center py-4 border-t">
-          <div className="text-lg font-semibold">Total</div>
-          <div className="text-2xl font-bold">{formatCurrency(total)}</div>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <div className="grid gap-4 md:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="customerName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Customer Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter customer name" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
+
+        {/* Add item fields here */}
         
-        <Button type="submit" className="w-full">
-          Complete Sale
+        <Button type="submit" disabled={isLoading}>
+          {isLoading ? "Creating..." : "Create Sale"}
         </Button>
       </form>
     </Form>

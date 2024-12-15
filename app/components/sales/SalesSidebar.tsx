@@ -4,28 +4,45 @@ import { cn } from "@/lib/utils"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { 
-  ShoppingCart, 
+  FileText, 
   PlusCircle, 
+  Clock,
+  CheckCircle2,
+  XCircle,
   RefreshCcw,
-  Download,
-  History
+  Download
 } from "lucide-react"
 
 const salesLinks = [
   {
-    title: "Sales History",
+    title: "All Sales",
     href: "/dashboard/sales",
-    icon: History
+    icon: FileText
+  },
+  {
+    title: "Pending",
+    href: "/dashboard/sales/pending",
+    icon: Clock
+  },
+  {
+    title: "Completed",
+    href: "/dashboard/sales/completed",
+    icon: CheckCircle2
+  },
+  {
+    title: "Refunded",
+    href: "/dashboard/sales/refunded",
+    icon: RefreshCcw
+  },
+  {
+    title: "Partially Refunded",
+    href: "/dashboard/sales/partially_refunded",
+    icon: XCircle
   },
   {
     title: "New Sale",
     href: "/dashboard/sales/new",
     icon: PlusCircle
-  },
-  {
-    title: "Refunds",
-    href: "/dashboard/sales/refunds",
-    icon: RefreshCcw
   },
   {
     title: "Export",
