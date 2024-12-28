@@ -1,14 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+import { ResponsiveTable } from "@/components/ui/responsive-table"
 import { Input } from "@/components/ui/input"
 import {
   Select,
@@ -36,6 +29,34 @@ export function ProductsTable() {
 
     return matchesSearch && matchesCategory && matchesStock
   })
+
+  const columns = [
+    {
+      key: "name",
+      title: "Name",
+      render: (value: string) => value
+    },
+    {
+      key: "category",
+      title: "Category",
+      render: (value: string) => value
+    },
+    {
+      key: "quantity",
+      title: "Quantity",
+      render: (value: number) => value.toString()
+    },
+    {
+      key: "minStockLevel",
+      title: "Min Stock Level",
+      render: (value: number) => value.toString()
+    },
+    {
+      key: "lastUpdated",
+      title: "Last Updated",
+      render: (value: Date) => value.toLocaleDateString()
+    }
+  ]
 
   return (
     <div className="space-y-4">
@@ -73,30 +94,10 @@ export function ProductsTable() {
         </Select>
       </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Quantity</TableHead>
-              <TableHead>Min Stock Level</TableHead>
-              <TableHead>Last Updated</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredItems.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell>{item.name}</TableCell>
-                <TableCell>{item.category}</TableCell>
-                <TableCell>{item.quantity}</TableCell>
-                <TableCell>{item.minStockLevel}</TableCell>
-                <TableCell>{item.lastUpdated.toLocaleDateString()}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+      <ResponsiveTable
+        data={filteredItems}
+        columns={columns}
+      />
     </div>
   )
 }

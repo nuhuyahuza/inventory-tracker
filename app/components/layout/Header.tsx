@@ -12,16 +12,28 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Search, Bell, LogOut, Settings, User } from "lucide-react"
+import { Search, Bell, LogOut, Settings, User, Menu } from "lucide-react"
+import { useMobileMenu } from "@/store/mobile-menu"
 
 interface HeaderProps {
   className?: string
 }
 
 export function Header({ className }: HeaderProps) {
+  const { toggle } = useMobileMenu()
+
   return (
     <header className={className}>
       <div className="flex h-16 items-center px-4 gap-4">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="md:hidden"
+          onClick={toggle}
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
+
         <Link href="/dashboard" className="font-semibold">
           EstimateHub
         </Link>

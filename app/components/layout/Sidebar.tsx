@@ -8,14 +8,27 @@ import {
   FileText, 
   BarChart3, 
   Settings,
-  Users
+  Users,
+  Package,
+  ShoppingCart
 } from "lucide-react"
+import { useMobileMenu } from "@/store/mobile-menu"
 
 const routes = [
   {
     label: "Dashboard",
     icon: LayoutDashboard,
     href: "/dashboard",
+  },
+  {
+    label: "Products",
+    icon: Package,
+    href: "/dashboard/products",
+  },
+  {
+    label: "Sales",
+    icon: ShoppingCart,
+    href: "/dashboard/sales",
   },
   {
     label: "Estimates",
@@ -39,11 +52,19 @@ const routes = [
   },
 ]
 
-export function Sidebar() {
+interface SidebarProps {
+  className?: string
+}
+
+export function Sidebar({ className }: SidebarProps) {
   const pathname = usePathname()
+  const { close } = useMobileMenu()
 
   return (
-    <div className="flex h-full w-[200px] flex-col border-r bg-muted/10">
+    <div className={cn(
+      "flex h-full w-[200px] flex-col border-r bg-muted/10",
+      className
+    )}>
       <div className="flex flex-1 flex-col gap-2 p-4">
         {routes.map((route) => {
           const Icon = route.icon
@@ -53,6 +74,7 @@ export function Sidebar() {
             <Link
               key={route.href}
               href={route.href}
+              onClick={close}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
                 isActive 

@@ -1,14 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+import { ResponsiveTable } from "@/components/ui/responsive-table"
+import { formatCurrency } from "@/lib/utils"
+import { SaleStatusBadge } from "./SaleStatusBadge"
+import { ViewSaleButton } from "./ViewSaleButton"
+import { TableLoading } from "@/components/ui/table-loading"
+import { salesData } from "@/lib/data/sales"
 import { Input } from "@/components/ui/input"
 import {
   Select,
@@ -17,13 +15,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { formatCurrency } from "@/lib/utils"
-import { SaleStatusBadge } from "./SaleStatusBadge"
-import { ViewSaleButton } from "./ViewSaleButton"
-import { TableLoading } from "@/components/ui/table-loading"
-import { salesData } from "@/lib/data/sales"
 
-type SaleStatus = "completed" | "pending" | "refunded" | "partially_refunded" | "all"
+type SaleStatus = "all" | "pending" | "completed" | "refunded" | "partially_refunded"
+
+interface Sale {
+  id: string
+  date: Date
+  customerName?: string
+  items: {
+    productId: string
+    quantity: number
+    priceAtSale: number
+  }[]
+  total: number
+  paymentMethod: 'cash' | 'credit_card' | 'paypal'
+  status: Exclude<SaleStatus, "all">
+  employeeId: string
+  notes?: string
+}
 
 interface SalesTableProps {
   status?: SaleStatus
@@ -33,58 +42,92 @@ export function SalesTable({ status = "all" }: SalesTableProps) {
   const [search, setSearch] = useState("")
   const [dateFilter, setDateFilter] = useState("all")
   const [isLoading, setIsLoading] = useState(true)
-  const [filteredSales, setFilteredSales] = useState(salesData)
+  const [sales, setSales] = useState<Sale[]>([])
 
   useEffect(() => {
     const loadSales = async () => {
       try {
         setIsLoading(true)
-        // Filter by status first
-        let statusFiltered = status === "all" 
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        
+        // Filter sales based on status
+        const filteredSales = status === "all" 
           ? salesData 
           : salesData.filter(sale => sale.status === status)
-
-        // Then apply search filter
-        statusFiltered = statusFiltered.filter(sale => {
-          const searchLower = search.toLowerCase()
-          return (
-            sale.customerName?.toLowerCase().includes(searchLower) ||
-            sale.id.toLowerCase().includes(searchLower)
-          )
-        })
-
-        // Then apply date filter
-        statusFiltered = statusFiltered.filter(sale => {
-          if (dateFilter === "all") return true
-          const saleDate = new Date(sale.date)
-          const today = new Date()
-          
-          switch (dateFilter) {
-            case "today":
-              return saleDate.toDateString() === today.toDateString()
-            case "week":
-              const weekAgo = new Date(today.setDate(today.getDate() - 7))
-              return saleDate >= weekAgo
-            case "month":
-              const monthAgo = new Date(today.setMonth(today.getMonth() - 1))
-              return saleDate >= monthAgo
-            default:
-              return true
-          }
-        })
-
-        setFilteredSales(statusFiltered)
+        
+        setSales(filteredSales)
       } finally {
         setIsLoading(false)
       }
     }
-
     loadSales()
-  }, [status, search, dateFilter])
+  }, [status])
+
+  const filteredSales = sales.filter(sale => {
+    const matchesSearch = 
+      sale.customerName?.toLowerCase().includes(search.toLowerCase()) ||
+      sale.id.toLowerCase().includes(search.toLowerCase())
+    
+    const matchesDate = dateFilter === "all" || (() => {
+      const today = new Date()
+      const saleDate = new Date(sale.date)
+      switch (dateFilter) {
+        case "today":
+          return saleDate.toDateString() === today.toDateString()
+        case "week":
+          const weekAgo = new Date(today.setDate(today.getDate() - 7))
+          return saleDate >= weekAgo
+        case "month":
+          const monthAgo = new Date(today.setMonth(today.getMonth() - 1))
+          return saleDate >= monthAgo
+        default:
+          return true
+      }
+    })()
+
+    return matchesSearch && matchesDate
+  })
 
   if (isLoading) {
     return <TableLoading columnCount={7} />
   }
+
+  const columns = [
+    {
+      key: "id",
+      title: "Sale ID",
+      render: (value: string) => <span className="font-medium">{value}</span>
+    },
+    {
+      key: "date",
+      title: "Date",
+      render: (value: Date) => value.toLocaleDateString()
+    },
+    {
+      key: "customerName",
+      title: "Customer",
+      render: (value?: string) => value || "Walk-in Customer"
+    },
+    {
+      key: "items",
+      title: "Items",
+      render: (value: any[]) => `${value.length} items`
+    },
+    {
+      key: "total",
+      title: "Total",
+      render: (value: number) => formatCurrency(value)
+    },
+    {
+      key: "status",
+      title: "Status",
+      render: (value: Exclude<SaleStatus, "all">) => <SaleStatusBadge status={value} />
+    }
+  ]
+
+  const renderActions = (sale: Sale) => (
+    <ViewSaleButton saleId={sale.id} />
+  )
 
   return (
     <div className="w-full space-y-4">
@@ -111,46 +154,11 @@ export function SalesTable({ status = "all" }: SalesTableProps) {
         </div>
       </div>
 
-      <div className="border rounded-md w-full">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Sale ID</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead className="w-full">Customer</TableHead>
-              <TableHead>Items</TableHead>
-              <TableHead>Total</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredSales.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
-                  No sales found.
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredSales.map((sale) => (
-                <TableRow key={sale.id}>
-                  <TableCell className="font-medium">{sale.id}</TableCell>
-                  <TableCell>{new Date(sale.date).toLocaleDateString()}</TableCell>
-                  <TableCell>{sale.customerName || "Walk-in Customer"}</TableCell>
-                  <TableCell>{sale.items.length} items</TableCell>
-                  <TableCell>{formatCurrency(sale.total)}</TableCell>
-                  <TableCell>
-                    <SaleStatusBadge status={sale.status} />
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <ViewSaleButton saleId={sale.id} />
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      <ResponsiveTable
+        data={filteredSales}
+        columns={columns}
+        actions={renderActions}
+      />
     </div>
   )
 }

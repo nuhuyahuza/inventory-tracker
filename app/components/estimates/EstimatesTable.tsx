@@ -1,14 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+import { ResponsiveTable } from "@/components/ui/responsive-table"
 import { Input } from "@/components/ui/input"
 import {
   Select,
@@ -22,6 +15,8 @@ import { formatCurrency } from "@/lib/utils"
 import { EstimateStatusBadge } from "@/components/estimates/EstimateStatusBadge"
 import { ConvertToSaleButton } from "./ConvertToSaleButton"
 import { ViewEstimateButton } from "./ViewEstimateButton"
+
+type EstimateStatus = 'pending' | 'accepted' | 'rejected' | 'expired' | 'converted'
 
 interface EstimatesTableProps {
   status?: string
@@ -56,6 +51,51 @@ export function EstimatesTable({ status = "all" }: EstimatesTableProps) {
 
     return matchesSearch && matchesStatus && matchesDate
   })
+
+  const columns = [
+    {
+      key: "id",
+      title: "Estimate ID",
+      render: (value: string) => value
+    },
+    {
+      key: "customerName", 
+      title: "Customer",
+      render: (value: string) => value
+    },
+    {
+      key: "createdAt",
+      title: "Created Date", 
+      render: (value: Date) => value.toLocaleDateString()
+    },
+    {
+      key: "validUntil",
+      title: "Valid Until",
+      render: (value: Date) => value.toLocaleDateString()
+    },
+    {
+      key: "total",
+      title: "Total",
+      render: (value: number) => formatCurrency(value)
+    },
+    {
+      key: "status",
+      title: "Status",
+      render: (value: string) => <EstimateStatusBadge status={value as EstimateStatus} />
+    },
+    {
+      key: "actions",
+      title: "Actions",
+      render: (estimate: any) => (
+        <div className="flex gap-2">
+          <ViewEstimateButton estimate={estimate} />
+          {estimate.status === 'pending' && (
+            <ConvertToSaleButton estimate={estimate} />
+          )}
+        </div>
+      )
+    }
+  ]
 
   return (
     <div className="space-y-4">
@@ -93,43 +133,18 @@ export function EstimatesTable({ status = "all" }: EstimatesTableProps) {
         </Select>
       </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Estimate ID</TableHead>
-              <TableHead>Customer</TableHead>
-              <TableHead>Created Date</TableHead>
-              <TableHead>Valid Until</TableHead>
-              <TableHead>Total</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredEstimates.map((estimate) => (
-              <TableRow key={estimate.id}>
-                <TableCell>{estimate.id}</TableCell>
-                <TableCell>{estimate.customerName}</TableCell>
-                <TableCell>{estimate.createdAt.toLocaleDateString()}</TableCell>
-                <TableCell>{estimate.validUntil.toLocaleDateString()}</TableCell>
-                <TableCell>{formatCurrency(estimate.total)}</TableCell>
-                <TableCell>
-                  <EstimateStatusBadge status={estimate.status} />
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-2">
-                    <ViewEstimateButton estimate={estimate} />
-                    {estimate.status === 'pending' && (
-                      <ConvertToSaleButton estimate={estimate} />
-                    )}
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+      <ResponsiveTable
+        data={filteredEstimates}
+        columns={columns}
+        actions={(estimate) => (
+          <div className="flex gap-2">
+            <ViewEstimateButton estimate={estimate} />
+            {estimate.status === 'pending' && (
+              <ConvertToSaleButton estimate={estimate} />
+            )}
+          </div>
+        )}
+      />
     </div>
   )
-} 
+}
