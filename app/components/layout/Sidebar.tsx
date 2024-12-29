@@ -10,7 +10,7 @@ import {
   Settings,
   Users,
   Package,
-  ShoppingCart
+  ShoppingCart,
 } from "lucide-react"
 import { useMobileMenu } from "@/store/mobile-menu"
 

@@ -1,102 +1,100 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { ResponsiveTable } from "@/components/ui/responsive-table"
+import { formatCurrency } from "@/lib/utils"
+import { TableLoading } from "@/components/ui/table-loading"
 import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { inventoryItems, categories } from "@/lib/data"
+import { InventoryService } from "@/services"
+import type { InventoryItem } from "@/types/database"
+import { AddProductDialog } from "./AddProductDialog"
 
 export function ProductsTable() {
   const [search, setSearch] = useState("")
-  const [categoryFilter, setCategoryFilter] = useState<string>("all")
-  const [stockFilter, setStockFilter] = useState<string>("all")
+  const [isLoading, setIsLoading] = useState(true)
+  const [products, setProducts] = useState<InventoryItem[]>([])
+  const [isAddProductOpen, setIsAddProductOpen] = useState(false)
 
-  const filteredItems = inventoryItems.filter(item => {
-    const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase()) ||
-      item.sku.toLowerCase().includes(search.toLowerCase())
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        setIsLoading(true)
+        const data = await InventoryService.getAll()
+        setProducts(data)
+      } catch (error) {
+        console.error('Failed to load products:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
     
-    const matchesCategory = categoryFilter === "all" || item.category === categoryFilter
-    
-    const matchesStock = stockFilter === "all" ||
-      (stockFilter === "low" && item.quantity < item.minStockLevel) ||
-      (stockFilter === "out" && item.quantity === 0)
+    loadProducts()
+  }, [])
 
-    return matchesSearch && matchesCategory && matchesStock
-  })
+  useEffect(() => {
+    const handleOpenAddProduct = () => setIsAddProductOpen(true)
+    window.addEventListener('openAddProduct', handleOpenAddProduct)
+    return () => window.removeEventListener('openAddProduct', handleOpenAddProduct)
+  }, [])
+
+  const filteredProducts = products.filter(product =>
+    product.name.toLowerCase().includes(search.toLowerCase()) ||
+    product.sku.toLowerCase().includes(search.toLowerCase())
+  )
+
+  if (isLoading) {
+    return <TableLoading columnCount={6} />
+  }
 
   const columns = [
     {
+      key: "sku",
+      title: "SKU",
+      render: (value: string) => <span className="font-medium">{value}</span>
+    },
+    {
       key: "name",
-      title: "Name",
-      render: (value: string) => value
+      title: "Name"
     },
     {
       key: "category",
       title: "Category",
-      render: (value: string) => value
+      render: (value: { name: string }) => value.name
     },
     {
       key: "quantity",
-      title: "Quantity",
-      render: (value: number) => value.toString()
+      title: "Stock"
+    },
+    {
+      key: "price",
+      title: "Price",
+      render: (value: number) => formatCurrency(value)
     },
     {
       key: "minStockLevel",
-      title: "Min Stock Level",
-      render: (value: number) => value.toString()
-    },
-    {
-      key: "lastUpdated",
-      title: "Last Updated",
-      render: (value: Date) => value.toLocaleDateString()
+      title: "Min Stock Level"
     }
   ]
 
   return (
-    <div className="space-y-4">
-      <div className="flex gap-4">
+    <div className="w-full space-y-4">
+      <div className="flex items-center justify-between">
         <Input
           placeholder="Search by name or SKU..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="max-w-sm"
+          className="w-[300px]"
         />
-        
-        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Category" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
-            {categories.map((category) => (
-              <SelectItem key={category.id} value={category.id}>
-                {category.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select value={stockFilter} onValueChange={setStockFilter}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Stock Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Stock Levels</SelectItem>
-            <SelectItem value="low">Low Stock</SelectItem>
-            <SelectItem value="out">Out of Stock</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
 
       <ResponsiveTable
-        data={filteredItems}
+        data={filteredProducts}
         columns={columns}
+      />
+
+      <AddProductDialog 
+        open={isAddProductOpen} 
+        onOpenChange={setIsAddProductOpen}
       />
     </div>
   )

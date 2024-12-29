@@ -1,30 +1,20 @@
 import { Card } from "./card"
 import { cn } from "@/lib/utils"
 
-interface TableCardProps extends React.HTMLAttributes<HTMLDivElement> {
-  items: Record<string, any>[]
-  renderItem: (item: Record<string, any>) => React.ReactNode
+interface TableCardProps {
+  title: string
+  description?: string
+  children: React.ReactNode
 }
 
-export function TableCard({ 
-  items, 
-  renderItem,
-  className,
-  ...props 
-}: TableCardProps) {
+export function TableCard({ title, description, children }: TableCardProps) {
   return (
-    <div 
-      className={cn(
-        "grid gap-4 md:hidden", 
-        className
-      )} 
-      {...props}
-    >
-      {items.map((item, index) => (
-        <Card key={index} className="p-4">
-          {renderItem(item)}
-        </Card>
-      ))}
+    <div className="rounded-lg border bg-card">
+      <div className="p-6 flex flex-col gap-1">
+        <h2 className="text-lg font-semibold">{title}</h2>
+        {description && <p className="text-sm text-muted-foreground">{description}</p>}
+      </div>
+      {children}
     </div>
   )
 } 

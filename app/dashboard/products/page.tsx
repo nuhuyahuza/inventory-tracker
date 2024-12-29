@@ -1,20 +1,13 @@
-import { ProductsTable } from "@/components/products/ProductsTable"
-import { AddProductModal } from "@/components/products/AddProductModal"
+import { ProductsTabs } from "@/components/products/ProductsTabs"
+import { TableCard } from "@/components/ui/table-card"
 
 export default function ProductsPage() {
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold">Products</h2>
-          <p className="text-muted-foreground">
-            Manage your inventory items
-          </p>
-        </div>
-        <AddProductModal />
-      </div>
-      
-      <ProductsTable />
-    </div>
+    <TableCard
+      title="Products"
+      description="Manage your products and categories"
+    >
+      <ProductsTabs />
+    </TableCard>
   )
 } 

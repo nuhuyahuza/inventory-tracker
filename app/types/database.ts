@@ -7,11 +7,14 @@ export interface InventoryItem {
   id: string
   sku: string
   name: string
-  category: string
+  category_id: string
+  category: {
+    name: string
+  }
   quantity: number
   price: number
-  minStockLevel: number
-  lastUpdated: Date
+  min_stock_level: number
+  last_updated: string
 }
 
 export interface Estimate {
